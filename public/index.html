@@ -1326,6 +1326,34 @@
             }
         }
 
+        @media (max-width: 480px) {
+            #attendance .card,
+            #assessments .card {
+                padding: 12px;
+            }
+
+            #attendance .attendance-layout,
+            #assessments .attendance-layout {
+                gap: 10px;
+            }
+
+            #attendance table.mobile-cards tr,
+            #assessments table.mobile-cards tr {
+                padding: 8px;
+            }
+
+            #attendance table.mobile-cards td,
+            #assessments table.mobile-cards td {
+                padding: 5px 6px;
+            }
+
+            #attendance table.mobile-cards td::before,
+            #assessments table.mobile-cards td::before {
+                min-width: 70px;
+                font-size: 12px;
+            }
+        }
+
         .close-modal {
             cursor: pointer;
             color: var(--muted);
