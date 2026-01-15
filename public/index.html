@@ -1060,6 +1060,14 @@
             grid-column: 1 / -1;
         }
 
+        .attendance-layout > .form-row {
+            grid-column: 1 / -1;
+        }
+
+        .attendance-layout > .form-row .btn {
+            align-self: end;
+        }
+
         .score-input {
             width: 72px;
             min-width: 72px;
@@ -1088,7 +1096,9 @@
             }
 
             .header {
-                padding: 20px;
+                padding: 16px;
+                text-align: center;
+                align-items: center;
             }
 
             .header-logo {
@@ -1099,11 +1109,33 @@
 
             .header-brand {
                 flex-direction: column;
+                align-items: center;
                 text-align: center;
             }
 
             .header-title {
                 text-align: center;
+            }
+
+            .header-title h1 {
+                font-size: 20px;
+                line-height: 1.2;
+            }
+
+            .header-title p {
+                font-size: 13px;
+            }
+
+            .header-meta {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .header-chip {
+                flex: 1 1 140px;
+                justify-content: center;
             }
 
             .menu-toggle {
@@ -1191,7 +1223,7 @@
                 content: attr(data-label);
                 font-weight: 600;
                 color: var(--accent);
-                min-width: 120px;
+                min-width: 90px;
             }
 
             #attendance .attendance-layout,
@@ -1209,9 +1241,41 @@
                 width: 100%;
             }
 
+            #attendance .attendance-layout .form-group,
+            #assessments .attendance-layout .form-group {
+                width: 100%;
+            }
+
+            #attendance .attendance-layout select,
+            #attendance .attendance-layout input,
+            #assessments .attendance-layout select,
+            #assessments .attendance-layout input {
+                width: 100%;
+            }
+
             #attendance .attendance-layout .table-scroll,
             #assessments .attendance-layout .table-scroll {
                 margin-top: 6px;
+            }
+
+            #attendance .attendance-layout .table-scroll table,
+            #assessments .attendance-layout .table-scroll table {
+                min-width: 100%;
+            }
+
+            #attendance .attendance-layout > .form-row,
+            #assessments .attendance-layout > .form-row {
+                width: 100%;
+            }
+
+            #attendance .attendance-layout > .form-row .form-group,
+            #assessments .attendance-layout > .form-row .form-group {
+                width: 100%;
+            }
+
+            #attendance .attendance-layout > .form-row .btn,
+            #assessments .attendance-layout > .form-row .btn {
+                width: 100%;
             }
 
             #attendance .attendance-layout .score-input,
