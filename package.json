@@ -1,0 +1,18 @@
+{
+  "name": "sports-academy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "NODE_ENV=development node server/app.js",
+    "start": "NODE_ENV=prd node server/app.js",
+    "init-db": "node server/initDb.js",
+    "import:xlsm": "node scripts/import-xlsm.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "xlsx": "^0.18.5"
+  }
+}

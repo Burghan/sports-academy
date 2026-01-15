@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sports Academy Login</title>
+  <style>
+    @font-face {
+      font-family: "Montserrat";
+      src: url("fonts/Montserrat-VariableFont_wght.ttf") format("truetype");
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg-start: #ffffff;
+      --bg-mid: #f5f6f8;
+      --bg-end: #edf0f4;
+      --accent: #0a3f86;
+      --accent-2: #1b5bb3;
+      --ink: #163a6b;
+      --muted: #6c7a8c;
+      --card: #ffffff;
+      --border: #e2e5ea;
+      --font-body: "Montserrat", "Avenir", "Futura", "Century Gothic", "Arial", sans-serif;
+      --font-display: "Montserrat", "Avenir", "Futura", "Century Gothic", "Arial Black", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: radial-gradient(circle at 20% 0%, var(--bg-start) 0%, var(--bg-mid) 55%, var(--bg-end) 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: min(420px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 18px 40px rgba(12, 24, 41, 0.12);
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+
+      .card {
+        padding: 22px;
+        border-radius: 14px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+    }
+
+    h1 {
+      font-size: 22px;
+      color: var(--accent);
+      margin-bottom: 8px;
+      font-family: var(--font-display);
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 14px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      color: var(--ink);
+      margin-bottom: 14px;
+      font-size: 14px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(10, 63, 134, 0.15);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 11px 22px;
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn:hover {
+      background: var(--accent-2);
+      box-shadow: 0 8px 16px rgba(10, 63, 134, 0.2);
+    }
+
+    .error {
+      margin-top: 12px;
+      color: #b94a4a;
+      font-size: 13px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Sports Academy Login</h1>
+    <p>Sign in with your name and PIN.</p>
+    <label for="name">Name</label>
+    <input id="name" type="text" placeholder="Owner / Coach" autocomplete="username">
+    <label for="pin">PIN</label>
+    <input id="pin" type="password" inputmode="numeric" maxlength="6" placeholder="4-6 digit PIN" autocomplete="current-password">
+    <button class="btn" id="loginBtn">Login</button>
+    <div class="error" id="loginError"></div>
+  </div>
+
+  <script>
+    async function doLogin() {
+      const name = document.getElementById('name').value.trim();
+      const pin = document.getElementById('pin').value.trim();
+      const errorEl = document.getElementById('loginError');
+      errorEl.style.display = 'none';
+
+      if (!name || !pin) {
+        errorEl.textContent = 'Name and PIN are required.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, pin })
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        errorEl.textContent = data.error || 'Login failed.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      window.location.href = '/';
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', doLogin);
+    document.getElementById('pin').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') doLogin();
+    });
+  </script>
+</body>
+</html>

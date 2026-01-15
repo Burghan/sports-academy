@@ -1,0 +1,12 @@
+node_modules/
+database/
+.env.development
+.env.prd
+PASTE_DB_PATH
+database/*.db
+database/*.db-shm
+database/*.db-wal
+.env
+.env.local
+.venv/
+*.log
