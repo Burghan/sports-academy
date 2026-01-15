@@ -1347,41 +1347,41 @@
             <aside class="sidebar" id="sidebarMenu">
                 <div class="sidebar-title">Navigation</div>
                 <div class="sidebar-nav">
+                    <button class="tab-btn active" data-tab="dashboard" data-roles="admin,supervisor,owner">Dashboard</button>
                     <div class="sidebar-group" data-group="enrollment">
                         <div class="sidebar-group-title">Enrollment</div>
-                        <button class="tab-btn" data-tab="enrollment" data-roles="admin,supervisor">
+                        <button class="tab-btn" data-tab="enrollment" data-roles="admin,supervisor,owner">
                             Enrollment
                         </button>
-                        <button class="tab-btn" data-tab="students" data-roles="admin,supervisor">
+                        <button class="tab-btn" data-tab="students" data-roles="admin,supervisor,owner">
                             Manage Student
                         </button>
-                        <button class="tab-btn" data-tab="batches" data-roles="admin,supervisor">
+                        <button class="tab-btn" data-tab="batches" data-roles="admin,supervisor,owner">
                             Manage Class
                         </button>
                     </div>
-                    <button class="tab-btn active" data-tab="dashboard" data-roles="admin,supervisor">Dashboard</button>
                     <div class="sidebar-group" data-group="administration">
                         <div class="sidebar-group-title">Administration</div>
-                        <button class="tab-btn" data-tab="locations" data-roles="admin,supervisor">Locations</button>
-                        <button class="tab-btn" data-tab="sessions" data-roles="admin,supervisor">Sessions</button>
-                        <button class="tab-btn" data-tab="coaches" data-roles="admin,supervisor">Coaches</button>
+                        <button class="tab-btn" data-tab="locations" data-roles="admin,supervisor,owner">Locations</button>
+                        <button class="tab-btn" data-tab="sessions" data-roles="admin,supervisor,owner">Sessions</button>
+                        <button class="tab-btn" data-tab="coaches" data-roles="admin,supervisor,owner">Coaches</button>
                     </div>
                     <div class="sidebar-group" data-group="coaching">
                         <div class="sidebar-group-title">Coaching</div>
-                        <button class="tab-btn" data-tab="attendance" data-roles="admin,supervisor,coach">Attendance</button>
-                        <button class="tab-btn" data-tab="assessments" data-roles="admin,supervisor,coach">Assessments</button>
+                        <button class="tab-btn" data-tab="attendance" data-roles="admin,supervisor,coach,owner">Attendance</button>
+                        <button class="tab-btn" data-tab="assessments" data-roles="admin,supervisor,coach,owner">Assessments</button>
                     </div>
                     <div class="sidebar-group" data-group="billing">
                         <div class="sidebar-group-title">Billing</div>
-                        <button class="tab-btn" data-tab="plans" data-roles="admin,supervisor">Plans</button>
-                        <button class="tab-btn" data-tab="fees" data-roles="admin,supervisor">Fees & Payments</button>
+                        <button class="tab-btn" data-tab="plans" data-roles="admin,supervisor,owner">Plans</button>
+                        <button class="tab-btn" data-tab="fees" data-roles="admin,supervisor,owner">Fees & Payments</button>
                     </div>
-                    <button class="tab-btn" data-tab="reports" data-roles="admin,supervisor">Reports</button>
+                    <button class="tab-btn" data-tab="reports" data-roles="admin,supervisor,owner">Reports</button>
                 </div>
             </aside>
             <div>
         <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active" data-roles="admin,supervisor">
+        <div id="dashboard" class="tab-content active" data-roles="admin,supervisor,owner">
             <div class="grid-2">
                 <div class="stats-card">
                     <h3>Total Students</h3>
@@ -1403,7 +1403,7 @@
         </div>
         
         <!-- Classes Tab -->
-        <div id="batches" class="tab-content" data-roles="admin,supervisor">
+        <div id="batches" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Manage Classes</h2>
                 
@@ -1429,7 +1429,7 @@
         </div>
 
         <!-- Locations Tab -->
-        <div id="locations" class="tab-content" data-roles="admin,supervisor">
+        <div id="locations" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Manage Locations</h2>
                 
@@ -1525,7 +1525,7 @@
         </div>
 
         <!-- Plans Tab -->
-        <div id="plans" class="tab-content" data-roles="admin,supervisor">
+        <div id="plans" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Pricing Plans</h2>
                 <button class="btn" onclick="openPlanModal()">+ Add Plan</button>
@@ -1550,7 +1550,7 @@
         </div>
 
         <!-- Sessions Tab -->
-        <div id="sessions" class="tab-content" data-roles="admin,supervisor">
+        <div id="sessions" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Sessions</h2>
                 <fieldset class="form-group">
@@ -1635,7 +1635,7 @@
         </div>
         
         <!-- Coaches Tab -->
-        <div id="coaches" class="tab-content" data-roles="admin,supervisor">
+        <div id="coaches" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Manage Coaches</h2>
 
@@ -1659,7 +1659,7 @@
         </div>
 
         <!-- Students Tab -->
-        <div id="students" class="tab-content" data-roles="admin,supervisor">
+        <div id="students" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Manage Students</h2>
                 
@@ -1686,7 +1686,7 @@
         </div>
         
         <!-- Enrollment Tab -->
-        <div id="enrollment" class="tab-content" data-roles="admin,supervisor">
+        <div id="enrollment" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Enroll Students to Classes</h2>
 
@@ -1848,7 +1848,7 @@
         </div>
         
         <!-- Attendance Tab -->
-        <div id="attendance" class="tab-content" data-roles="admin,supervisor,coach">
+        <div id="attendance" class="tab-content" data-roles="admin,supervisor,coach,owner">
             <div class="card">
                 <h2>Mark Attendance</h2>
 
@@ -1948,7 +1948,7 @@
         </div>
 
         <!-- Assessments Tab -->
-        <div id="assessments" class="tab-content" data-roles="admin,supervisor,coach">
+        <div id="assessments" class="tab-content" data-roles="admin,supervisor,coach,owner">
             <div class="card">
                 <h2>Record Assessments</h2>
 
@@ -2043,7 +2043,7 @@
         </div>
         
         <!-- Fees & Payments Tab -->
-        <div id="fees" class="tab-content" data-roles="admin,supervisor">
+        <div id="fees" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Manage Fees & Payments</h2>
                 
@@ -2077,7 +2077,7 @@
         </div>
         
         <!-- Reports Tab -->
-        <div id="reports" class="tab-content" data-roles="admin,supervisor">
+        <div id="reports" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Reports & Analytics</h2>
                 
@@ -2580,6 +2580,13 @@
             }
 
             updateSidebarGroups();
+
+            if (safeRole === 'owner') {
+                const dashboardTab = document.querySelector('.tab-btn[data-tab="dashboard"]');
+                if (dashboardTab && dashboardTab.style.display !== 'none') {
+                    switchTab('dashboard');
+                }
+            }
         }
 
         function updateSidebarGroups() {
