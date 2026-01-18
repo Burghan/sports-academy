@@ -4218,7 +4218,7 @@
         function closeCoachModal() {
             document.getElementById('coachModal').classList.remove('show');
             document.getElementById('coachId').value = '';
-            document.getElementById('coachFullName').value = '';
+            document.getElementById('coachName').value = '';
             document.getElementById('coachPhone').value = '';
             document.getElementById('coachStatus').value = 'Active';
         }
@@ -4226,7 +4226,7 @@
         async function saveCoach() {
             const coach = {
                 id: document.getElementById('coachId').value.trim(),
-                name: document.getElementById('coachFullName').value.trim(),
+                name: document.getElementById('coachName').value.trim(),
                 phone: document.getElementById('coachPhone').value.trim(),
                 status: document.getElementById('coachStatus').value
             };
@@ -4287,7 +4287,7 @@
             const coach = data.coaches.find(c => c.id === id);
             if (!coach) return;
             document.getElementById('coachId').value = coach.id;
-            document.getElementById('coachFullName').value = coach.name;
+            document.getElementById('coachName').value = coach.name;
             document.getElementById('coachPhone').value = coach.phone || '';
             document.getElementById('coachStatus').value = coach.status || 'Active';
             openCoachModal();
