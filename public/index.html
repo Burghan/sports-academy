@@ -1510,6 +1510,7 @@
                         <button class="tab-btn" data-tab="locations" data-roles="admin,supervisor,owner">Locations</button>
                         <button class="tab-btn" data-tab="sessions" data-roles="admin,supervisor,owner">Sessions</button>
                         <button class="tab-btn" data-tab="coaches" data-roles="admin,supervisor,owner">Coaches</button>
+                        <button class="tab-btn" data-tab="users" data-roles="admin,owner">Users</button>
                     </div>
                     <div class="sidebar-group" data-group="coaching">
                         <div class="sidebar-group-title">Coaching</div>
@@ -1762,12 +1763,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th><button class="link-btn" onclick="setSessionSort('date')">Date <span class="sort-indicator" data-sort-key="date"></span></button></th>
-                            <th><button class="link-btn" onclick="setSessionSort('name')">Session <span class="sort-indicator" data-sort-key="name"></span></button></th>
-                            <th><button class="link-btn" onclick="setSessionSort('coach')">Coach <span class="sort-indicator" data-sort-key="coach"></span></button></th>
-                            <th><button class="link-btn" onclick="setSessionSort('location')">Location <span class="sort-indicator" data-sort-key="location"></span></button></th>
-                            <th><button class="link-btn" onclick="setSessionSort('time')">Time <span class="sort-indicator" data-sort-key="time"></span></button></th>
-                            <th><button class="link-btn" onclick="setSessionSort('court')">Court <span class="sort-indicator" data-sort-key="court"></span></button></th>
+                            <th><button class="link-btn" onclick="setSessionSort('date')">Date <span class="sort-indicator" data-sort-key="date" data-sort-group="sessions"></span></button></th>
+                            <th><button class="link-btn" onclick="setSessionSort('name')">Session <span class="sort-indicator" data-sort-key="name" data-sort-group="sessions"></span></button></th>
+                            <th><button class="link-btn" onclick="setSessionSort('coach')">Coach <span class="sort-indicator" data-sort-key="coach" data-sort-group="sessions"></span></button></th>
+                            <th><button class="link-btn" onclick="setSessionSort('location')">Location <span class="sort-indicator" data-sort-key="location" data-sort-group="sessions"></span></button></th>
+                            <th><button class="link-btn" onclick="setSessionSort('time')">Time <span class="sort-indicator" data-sort-key="time" data-sort-group="sessions"></span></button></th>
+                            <th><button class="link-btn" onclick="setSessionSort('court')">Court <span class="sort-indicator" data-sort-key="court" data-sort-group="sessions"></span></button></th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -1803,28 +1804,56 @@
             </div>
         </div>
 
+        <!-- Users Tab -->
+        <div id="users" class="tab-content" data-roles="admin,owner">
+            <div class="card">
+                <h2>Manage Users</h2>
+
+                <button class="btn" onclick="openUserModal()">+ Add New User</button>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>PIN</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                        <tr><td colspan="5" class="empty-state">No users found</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Students Tab -->
         <div id="students" class="tab-content" data-roles="admin,supervisor,owner">
             <div class="card">
                 <h2>Manage Students</h2>
                 
-                <button class="btn" onclick="openStudentModal()">+ Add New Student</button>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn" onclick="openStudentModal()">+ Add New Student</button>
+                    <button class="btn btn-secondary" onclick="exportStudentsToExcel()">📥 Export to Excel</button>
+                </div>
                 
                 <table>
                     <thead>
                         <tr>
-                            <th>Player ID</th>
-                            <th>Player Name</th>
-                            <th>Class</th>
-                            <th>Level</th>
-                            <th>Status</th>
-                            <th>Parent</th>
-                            <th>Parent Phone</th>
+                            <th><button class="link-btn" onclick="setStudentSort('number')"># <span class="sort-indicator" data-sort-key="number" data-sort-group="students"></span></button></th>
+                            <th><button class="link-btn" onclick="setStudentSort('id')">Player ID <span class="sort-indicator" data-sort-key="id" data-sort-group="students"></span></button></th>
+                            <th><button class="link-btn" onclick="setStudentSort('name')">Player Name <span class="sort-indicator" data-sort-key="name" data-sort-group="students"></span></button></th>
+                            <th><button class="link-btn" onclick="setStudentSort('class')">Class <span class="sort-indicator" data-sort-key="class" data-sort-group="students"></span></button></th>
+                            <th><button class="link-btn" onclick="setStudentSort('level')">Level <span class="sort-indicator" data-sort-key="level" data-sort-group="students"></span></button></th>
+                            <th><button class="link-btn" onclick="setStudentSort('status')">Status <span class="sort-indicator" data-sort-key="status" data-sort-group="students"></span></button></th>
+                            <th><button class="link-btn" onclick="setStudentSort('parent')">Parent <span class="sort-indicator" data-sort-key="parent" data-sort-group="students"></span></button></th>
+                            <th><button class="link-btn" onclick="setStudentSort('phone')">Parent Phone <span class="sort-indicator" data-sort-key="phone" data-sort-group="students"></span></button></th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="studentsTable">
-                        <tr><td colspan="8" class="empty-state">No students enrolled yet</td></tr>
+                        <tr><td colspan="9" class="empty-state">No students enrolled yet</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -2194,7 +2223,7 @@
                 
                 <div class="form-group">
                     <label for="enrollmentSelectFees">Select Enrollment</label>
-                    <select id="enrollmentSelectFees">
+                    <select id="enrollmentSelectFees" onchange="refreshFeesTable()">
                         <option value="">-- Select Student --</option>
                     </select>
                 </div>
@@ -2215,7 +2244,24 @@
                         </tr>
                     </thead>
                     <tbody id="feesTable">
-                        <tr><td colspan="7" class="empty-state">No fees data</td></tr>
+                        <tr><td colspan="8" class="empty-state">No fees data</td></tr>
+                    </tbody>
+                </table>
+
+                <h3 style="margin-top: 20px;">Payment History</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Receipt No</th>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Method</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTable">
+                        <tr><td colspan="6" class="empty-state">Select a student to view payments</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -2232,7 +2278,7 @@
                         <option value="">-- Select Report --</option>
                         <option value="attendance">Attendance Summary</option>
                         <option value="fees" id="reportFeesOption">Fee Collection Report</option>
-                        <option value="students">Student List by Class</option>
+                        <option value="students">Student List</option>
                         <option value="assessments">Student Assessment</option>
                     </select>
                 </div>
@@ -2349,6 +2395,46 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeCoachModal()">Cancel</button>
                 <button class="btn" onclick="saveCoach()">Save Coach</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Add New User</h2>
+                <span class="close-modal" onclick="closeUserModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="userName">Name</label>
+                    <input type="text" id="userName" placeholder="User name">
+                </div>
+                <div class="form-group">
+                    <label for="userRole">Role</label>
+                    <select id="userRole">
+                        <option value="admin">Admin</option>
+                        <option value="owner">Owner</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="coach">Coach</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userPin">PIN (4-6 digits)</label>
+                    <input type="password" id="userPin" inputmode="numeric" maxlength="6" placeholder="Leave blank to keep current PIN">
+                </div>
+                <div class="form-group">
+                    <label for="userStatus">Status</label>
+                    <select id="userStatus">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeUserModal()">Cancel</button>
+                <button class="btn" onclick="saveUser()">Save User</button>
             </div>
         </div>
     </div>
@@ -2565,13 +2651,17 @@
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Record Payment</h2>
+                <h2 id="paymentModalTitle">Record Payment</h2>
                 <span class="close-modal" onclick="closePaymentModal()">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="form-group">
                     <label for="paymentEnrollment">Student &amp; Class</label>
                     <input type="text" id="paymentEnrollment" disabled>
+                </div>
+                <div class="form-group">
+                    <label for="paymentReceiptNo">Receipt No</label>
+                    <input type="text" id="paymentReceiptNo" disabled>
                 </div>
                 <div class="form-group">
                     <label for="paymentAmount">Payment Amount ($)</label>
@@ -2618,6 +2708,7 @@
         </div>
     </div>
 
+    <script src="vendor/jspdf.umd.min.js"></script>
     <script>
         function enhanceDatePickers() {
             document.querySelectorAll('input[type="date"]').forEach((input) => {
@@ -2634,6 +2725,7 @@
             classes: [],
             coaches: [],
             students: [],
+            users: [],
             enrollments: [],
             attendance: [],
             assessments: [],
@@ -2759,7 +2851,9 @@
         }
 
         async function loadData() {
-            const isCoach = String(currentUser?.role || '').toLowerCase() === 'coach';
+            const role = String(currentUser?.role || '').toLowerCase();
+            const isCoach = role === 'coach';
+            const canManageUsers = role === 'admin' || role === 'owner';
             const tasks = [
                 apiFetch('/api/classes'),
                 apiFetch('/api/coaches'),
@@ -2770,7 +2864,8 @@
                 apiFetch('/api/locations'),
                 apiFetch('/api/plans'),
                 apiFetch('/api/sessions'),
-                apiFetch('/api/session-blackouts')
+                apiFetch('/api/session-blackouts'),
+                canManageUsers ? apiFetch('/api/users') : Promise.resolve([])
             ];
             if (!isCoach) {
                 tasks.splice(6, 0, apiFetch('/api/payments'), apiFetch('/api/activities'));
@@ -2790,7 +2885,8 @@
                 locations,
                 plans,
                 sessions,
-                blackouts
+                blackouts,
+                users
             ] = await Promise.all(tasks);
 
             const systemClassIds = new Set(['SYS-SESSION']);
@@ -2807,10 +2903,12 @@
             data.plans = plans;
             data.sessions = sessions;
             data.blackouts = blackouts;
+            data.users = users;
 
             refreshClassesTable();
             refreshLocationsTable();
             refreshCoachesTable();
+            refreshUsersTable();
             refreshStudentsTable();
             refreshEnrollmentTable();
             refreshFeesTable();
@@ -2835,6 +2933,7 @@
             updateSessionSelectors();
             updateAttendanceClassOptions();
             updateSessionSortIndicators();
+            updateStudentSortIndicators();
             updateBlackoutLocationOptions();
             renderBlackoutCalendar();
 
@@ -2854,8 +2953,12 @@
         let editingLocationId = null;
         let editingSessionId = null;
         let editingEnrollmentId = null;
+        let editingUserId = null;
+        let editingPaymentId = null;
         let sessionSortKey = 'date';
         let sessionSortDir = 'asc';
+        let studentSortKey = 'name';
+        let studentSortDir = 'asc';
         let enrollmentWizardStep = 1;
         let enrollmentWizardInitialized = false;
         let attendanceExtraSeq = 1;
@@ -4166,7 +4269,7 @@
         }
 
         function updateSessionSortIndicators() {
-            document.querySelectorAll('.sort-indicator').forEach((el) => {
+            document.querySelectorAll('.sort-indicator[data-sort-group="sessions"]').forEach((el) => {
                 const key = el.dataset.sortKey;
                 const button = el.closest('button');
                 if (key !== sessionSortKey) {
@@ -4306,6 +4409,150 @@
             }
         }
 
+        // User management
+        function openUserModal() {
+            editingUserId = null;
+            const title = document.getElementById('userModalTitle');
+            if (title) title.textContent = 'Add New User';
+            document.getElementById('userName').value = '';
+            document.getElementById('userRole').value = 'coach';
+            document.getElementById('userPin').value = '';
+            document.getElementById('userPin').placeholder = '4-6 digit PIN';
+            document.getElementById('userStatus').value = 'Active';
+            document.getElementById('userModal').classList.add('show');
+        }
+
+        function closeUserModal() {
+            document.getElementById('userModal').classList.remove('show');
+            document.getElementById('userName').value = '';
+            document.getElementById('userRole').value = 'coach';
+            document.getElementById('userPin').value = '';
+            document.getElementById('userPin').placeholder = 'Leave blank to keep current PIN';
+            document.getElementById('userStatus').value = 'Active';
+            editingUserId = null;
+        }
+
+        async function saveUser() {
+            const name = document.getElementById('userName').value.trim();
+            const role = document.getElementById('userRole').value;
+            const pin = document.getElementById('userPin').value.trim();
+            const status = document.getElementById('userStatus').value;
+
+            if (!name || !role) {
+                showAlert('Please fill in Name and Role', 'error');
+                return;
+            }
+
+            if (!editingUserId && !pin) {
+                showAlert('Please set a PIN for the new user', 'error');
+                return;
+            }
+
+            if (pin && !/^\d{4,6}$/.test(pin)) {
+                showAlert('PIN must be 4-6 digits', 'error');
+                return;
+            }
+
+            const payload = {
+                name,
+                role,
+                active: status === 'Active' ? 1 : 0
+            };
+            if (pin) payload.pin = pin;
+
+            try {
+                if (editingUserId) {
+                    await apiFetch(`/api/users/${editingUserId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    });
+                    await addActivity(`User "${name}" updated`);
+                    showAlert('User updated successfully!');
+                } else {
+                    await apiFetch('/api/users', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    await addActivity(`User "${name}" created`);
+                    showAlert('User added successfully!');
+                }
+                closeUserModal();
+                await loadData();
+            } catch (err) {
+                showAlert(err.message || 'Failed to save user', 'error');
+            }
+        }
+
+        function refreshUsersTable() {
+            const tbody = document.getElementById('usersTable');
+            if (!tbody) return;
+            if (!data.users.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
+                return;
+            }
+
+            const roleLabel = (value) => {
+                const map = {
+                    admin: 'Admin',
+                    owner: 'Owner',
+                    supervisor: 'Supervisor',
+                    coach: 'Coach'
+                };
+                return map[String(value || '').toLowerCase()] || value || '-';
+            };
+
+            tbody.innerHTML = data.users.map(user => {
+                const isCurrent = String(currentUser?.id || '') === String(user.id || '');
+                const statusLabel = user.active ? 'Active' : 'Inactive';
+                const statusClass = user.active ? 'badge-success' : 'badge-warning';
+                return `
+                    <tr>
+                        <td>${user.name}</td>
+                        <td>${roleLabel(user.role)}</td>
+                        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                        <td>••••</td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-sm" onclick="editUser('${user.id}')">Edit</button>
+                                ${isCurrent ? '<span class="helper-text">Current</span>' : `<button class="btn btn-sm btn-danger" onclick="deleteUser('${user.id}')">Delete</button>`}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function editUser(id) {
+            const user = data.users.find(u => String(u.id) === String(id));
+            if (!user) return;
+            editingUserId = user.id;
+            const title = document.getElementById('userModalTitle');
+            if (title) title.textContent = 'Edit User';
+            document.getElementById('userName').value = user.name || '';
+            document.getElementById('userRole').value = String(user.role || 'coach').toLowerCase();
+            document.getElementById('userPin').value = '';
+            document.getElementById('userPin').placeholder = 'Leave blank to keep current PIN';
+            document.getElementById('userStatus').value = user.active ? 'Active' : 'Inactive';
+            document.getElementById('userModal').classList.add('show');
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+            if (String(currentUser?.id || '') === String(id)) {
+                showAlert('You cannot delete the current user.', 'error');
+                return;
+            }
+            const user = data.users.find(u => String(u.id) === String(id));
+            try {
+                await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
+                await addActivity(`User "${user?.name || id}" deleted`);
+                showAlert('User deleted successfully!');
+                await loadData();
+            } catch (err) {
+                showAlert(err.message || 'Failed to delete user', 'error');
+            }
+        }
+
         // Student management
         function openStudentModal() {
             document.getElementById('studentModal').classList.add('show');
@@ -4373,14 +4620,16 @@
         function refreshStudentsTable() {
             const tbody = document.getElementById('studentsTable');
             if (data.students.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No students enrolled yet</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No students enrolled yet</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = data.students.map(student => {
+            const rows = getSortedStudents();
+            tbody.innerHTML = rows.map((student, index) => {
                 const className = data.classes.find(c => c.id === student.class_id)?.name || student.class_id || '-';
                 return `
                     <tr>
+                        <td>${index + 1}</td>
                         <td>${student.id}</td>
                         <td>${student.name}</td>
                         <td>${className}</td>
@@ -4399,6 +4648,94 @@
             }).join('');
 
             updateStudentSelects();
+            updateStudentSortIndicators();
+        }
+
+        function getSortedStudents() {
+            const rows = [...data.students];
+            rows.sort((a, b) => {
+                const dir = studentSortDir === 'asc' ? 1 : -1;
+                const className = (item) => data.classes.find(c => c.id === item.class_id)?.name || item.class_id || '';
+                const val = (item) => {
+                    switch (studentSortKey) {
+                        case 'id':
+                            return String(item.id || '');
+                        case 'name':
+                            return String(item.name || '');
+                        case 'class':
+                            return String(className(item));
+                        case 'level':
+                            return String(item.level || '');
+                        case 'status':
+                            return String(item.status || '');
+                        case 'parent':
+                            return String(item.parent_name || '');
+                        case 'phone':
+                            return String(item.parent_phone || '');
+                        case 'number':
+                        default:
+                            return String(item.id || '');
+                    }
+                };
+                return val(a).localeCompare(val(b)) * dir;
+            });
+            return rows;
+        }
+
+        function setStudentSort(key) {
+            if (studentSortKey === key) {
+                studentSortDir = studentSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                studentSortKey = key;
+                studentSortDir = 'asc';
+            }
+            updateStudentSortIndicators();
+            refreshStudentsTable();
+        }
+
+        function updateStudentSortIndicators() {
+            document.querySelectorAll('.sort-indicator[data-sort-group="students"]').forEach((el) => {
+                const key = el.dataset.sortKey;
+                const button = el.closest('button');
+                if (key !== studentSortKey) {
+                    el.textContent = '';
+                    if (button) button.classList.remove('active');
+                    return;
+                }
+                el.textContent = studentSortDir === 'asc' ? '▲' : '▼';
+                if (button) button.classList.add('active');
+            });
+        }
+
+        function exportStudentsToExcel() {
+            fetch('/api/players/export', { method: 'GET' })
+                .then(async (response) => {
+                    if (!response.ok) {
+                        let message = 'Failed to export students';
+                        try {
+                            const payload = await response.json();
+                            message = payload?.error || message;
+                        } catch (err) {
+                            const text = await response.text();
+                            if (text) message = text;
+                        }
+                        throw new Error(message);
+                    }
+                    const blob = await response.blob();
+                    const disposition = response.headers.get('content-disposition') || '';
+                    const match = disposition.match(/filename=\"?([^\"]+)\"?/i);
+                    const filename = match ? match[1] : `students_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showAlert('Student export ready!');
+                })
+                .catch((err) => {
+                    showAlert(err.message || 'Failed to export students', 'error');
+                });
         }
 
         function updateStudentSelects() {
@@ -5348,12 +5685,20 @@
             }
             const enrollment = data.enrollments.find(e => String(e.id) === String(enrollmentId));
             document.getElementById('paymentEnrollment').value = `${enrollment.player_name || enrollment.player_id} - ${enrollment.class_name || enrollment.class_id}`;
+            document.getElementById('paymentReceiptNo').value = 'Auto';
             document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentMethod').value = 'cash';
+            document.getElementById('paymentNotes').value = '';
+            editingPaymentId = null;
+            const title = document.getElementById('paymentModalTitle');
+            if (title) title.textContent = 'Record Payment';
             document.getElementById('paymentModal').classList.add('show');
         }
 
         function closePaymentModal() {
             document.getElementById('paymentModal').classList.remove('show');
+            editingPaymentId = null;
         }
 
         async function savePayment() {
@@ -5369,19 +5714,35 @@
             }
 
             try {
-                await apiFetch('/api/payments', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        registration_id: enrollmentId,
-                        amount,
-                        date: paymentDate,
-                        method: paymentMethod,
-                        notes
-                    })
-                });
+                const payload = {
+                    registration_id: enrollmentId,
+                    amount,
+                    date: paymentDate,
+                    method: paymentMethod,
+                    notes,
+                    receipt_no: document.getElementById('paymentReceiptNo').value === 'Auto'
+                        ? ''
+                        : document.getElementById('paymentReceiptNo').value
+                };
+                if (editingPaymentId) {
+                    await apiFetch(`/api/payments/${editingPaymentId}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    await apiFetch('/api/payments', {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                }
                 const enrollment = data.enrollments.find(e => e.id === enrollmentId);
-                await addActivity(`Payment of ${amount} received from ${enrollment?.player_name || enrollment?.player_id || 'student'}`);
-                showAlert('Payment saved successfully!');
+                if (editingPaymentId) {
+                    await addActivity(`Payment updated for ${enrollment?.player_name || enrollment?.player_id || 'student'}`);
+                    showAlert('Payment updated successfully!');
+                } else {
+                    await addActivity(`Payment of ${amount} received from ${enrollment?.player_name || enrollment?.player_id || 'student'}`);
+                    showAlert('Payment saved successfully!');
+                }
                 closePaymentModal();
                 await loadData();
             } catch (err) {
@@ -5389,22 +5750,139 @@
             }
         }
 
+        function editPayment(id) {
+            const payment = data.payments.find(p => String(p.id) === String(id));
+            if (!payment) return;
+            const enrollment = data.enrollments.find(e => String(e.id) === String(payment.registration_id));
+            if (!enrollment) {
+                showAlert('Enrollment not found for this payment', 'error');
+                return;
+            }
+            document.getElementById('enrollmentSelectFees').value = enrollment.id;
+            document.getElementById('paymentEnrollment').value = `${enrollment.player_name || enrollment.player_id} - ${enrollment.class_name || enrollment.class_id}`;
+            document.getElementById('paymentReceiptNo').value = payment.receipt_no || '';
+            document.getElementById('paymentAmount').value = payment.amount || '';
+            document.getElementById('paymentDate').value = payment.date || '';
+            document.getElementById('paymentMethod').value = payment.method || 'cash';
+            document.getElementById('paymentNotes').value = payment.notes || '';
+            editingPaymentId = payment.id;
+            const title = document.getElementById('paymentModalTitle');
+            if (title) title.textContent = 'Edit Payment';
+            document.getElementById('paymentModal').classList.add('show');
+        }
+
+        async function deletePayment(id) {
+            if (!confirm('Delete this payment?')) return;
+            const payment = data.payments.find(p => String(p.id) === String(id));
+            try {
+                await apiFetch(`/api/payments/${id}`, { method: 'DELETE' });
+                await addActivity(`Payment deleted for ${payment?.registration_id || 'student'}`);
+                showAlert('Payment deleted successfully!');
+                await loadData();
+            } catch (err) {
+                showAlert(err.message || 'Failed to delete payment', 'error');
+            }
+        }
+
+        async function downloadReceipt(id) {
+            const payment = data.payments.find(p => String(p.id) === String(id));
+            if (!payment) {
+                showAlert('Payment not found', 'error');
+                return;
+            }
+            const enrollment = data.enrollments.find(e => String(e.id) === String(payment.registration_id));
+            const studentName = enrollment?.player_name || enrollment?.player_id || 'Student';
+            const className = enrollment?.class_name || enrollment?.class_id || '-';
+            const planName = data.plans.find(p => p.id === enrollment?.plan_id)?.name || '-';
+            const receiptNo = payment.receipt_no || 'N/A';
+            const { jsPDF } = window.jspdf || {};
+            if (!jsPDF) {
+                showAlert('PDF library not loaded', 'error');
+                return;
+            }
+
+            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 40;
+
+            const logoUrl = '/2rsa-logo.jpg';
+            const loadImage = () => new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = logoUrl;
+            });
+
+            const logo = await loadImage();
+            if (logo) {
+                doc.addImage(logo, 'JPEG', margin, 30, 70, 70);
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.text('2RSA Badminton Academy', pageWidth / 2, 50, { align: 'center' });
+
+            doc.setFontSize(14);
+            doc.text('Payment Receipt', pageWidth / 2, 72, { align: 'center' });
+
+            doc.setDrawColor(200);
+            doc.line(margin, 90, pageWidth - margin, 90);
+
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'normal');
+
+            const leftX = margin;
+            const rightX = pageWidth / 2 + 10;
+            let y = 120;
+
+            doc.text(`Receipt No: ${receiptNo}`, leftX, y);
+            doc.text(`Date: ${payment.date || '-'}`, rightX, y);
+            y += 18;
+            doc.text(`Student: ${studentName}`, leftX, y);
+            doc.text(`Class: ${className}`, rightX, y);
+            y += 18;
+            doc.text(`Plan: ${planName}`, leftX, y);
+            doc.text(`Method: ${payment.method || '-'}`, rightX, y);
+            y += 18;
+            doc.text(`Amount: ${Number(payment.amount || 0).toFixed(2)}`, leftX, y);
+
+            y += 28;
+            doc.setFont('helvetica', 'bold');
+            doc.text('Notes', leftX, y);
+            doc.setFont('helvetica', 'normal');
+            y += 14;
+            const notes = payment.notes || '-';
+            const wrapped = doc.splitTextToSize(notes, pageWidth - margin * 2);
+            doc.text(wrapped, leftX, y);
+
+            const filename = `receipt_${receiptNo.replace(/[^\w-]+/g, '') || payment.id}.pdf`;
+            doc.save(filename);
+        }
+
         function refreshFeesTable() {
             const tbody = document.getElementById('feesTable');
             const select = document.getElementById('enrollmentSelectFees');
             if (!tbody || !select) return;
 
+            const currentEnrollment = select.value;
             select.innerHTML = '<option value="">-- Select Student --</option>' +
                 data.enrollments.map(e => `<option value="${e.id}">${e.player_name || e.player_id} - ${e.class_name || e.class_id}</option>`).join('');
+            if (currentEnrollment) {
+                select.value = currentEnrollment;
+            }
 
             if (data.enrollments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No fees data</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No fees data</td></tr>';
+                const paymentsBody = document.getElementById('paymentsTable');
+                if (paymentsBody) {
+                    paymentsBody.innerHTML = '<tr><td colspan="5" class="empty-state">No payments found</td></tr>';
+                }
                 return;
             }
 
             const now = new Date();
             const currentYearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
-
             tbody.innerHTML = data.enrollments.map(enrollment => {
                 const plan = data.plans.find(p => p.id === enrollment.plan_id);
                 let due = 0;
@@ -5444,6 +5922,41 @@
                     </tr>
                 `;
             }).join('');
+
+            refreshPaymentsTable();
+        }
+
+        function refreshPaymentsTable() {
+            const tbody = document.getElementById('paymentsTable');
+            const enrollmentId = document.getElementById('enrollmentSelectFees')?.value;
+            if (!tbody) return;
+            if (!enrollmentId) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Select a student to view payments</td></tr>';
+                return;
+            }
+            const payments = data.payments
+                .filter(p => String(p.registration_id) === String(enrollmentId))
+                .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+            if (!payments.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No payments recorded</td></tr>';
+                return;
+            }
+            tbody.innerHTML = payments.map(payment => `
+                <tr>
+                    <td>${payment.receipt_no || '-'}</td>
+                    <td>${payment.date || '-'}</td>
+                    <td>${(payment.amount || 0).toFixed(2)}</td>
+                    <td>${payment.method || '-'}</td>
+                    <td>${payment.notes || '-'}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-sm" onclick="editPayment('${payment.id}')">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deletePayment('${payment.id}')">Delete</button>
+                            <button class="btn btn-sm btn-secondary" onclick="downloadReceipt('${payment.id}')">Receipt PDF</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
         }
 
         // Dashboard
@@ -5544,13 +6057,34 @@
             } else if (reportType === 'students') {
                 html = `
                     ${brandBlock}
-                    <h3>Student List by Class</h3>
+                    <h3>Student List</h3>
                     <table>
-                        <thead><tr><th>Class</th><th>Student</th><th>Parent Phone</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Player ID</th>
+                                <th>Player Name</th>
+                                <th>Status</th>
+                                <th>Parent</th>
+                                <th>Parent Phone</th>
+                                <th>Start Date</th>
+                                <th>Payment Status</th>
+                            </tr>
+                        </thead>
                         <tbody>
-                            ${data.students.map(s => {
-                                const className = data.classes.find(c => c.id === s.class_id)?.name || s.class_id || '-';
-                                return `<tr><td>${className}</td><td>${s.name}</td><td>${s.parent_phone || '-'}</td></tr>`;
+                            ${[...data.students].sort((a, b) => String(a.id || '').localeCompare(String(b.id || ''))).map((s, index) => {
+                                return `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${s.id || '-'}</td>
+                                        <td>${s.name || '-'}</td>
+                                        <td>${s.status || '-'}</td>
+                                        <td>${s.parent_name || '-'}</td>
+                                        <td>${s.parent_phone || '-'}</td>
+                                        <td>${s.start_date || '-'}</td>
+                                        <td>${s.payment_status || '-'}</td>
+                                    </tr>
+                                `;
                             }).join('')}
                         </tbody>
                     </table>
@@ -5588,12 +6122,8 @@
             let filename = 'report.csv';
 
             if (reportType === 'students') {
-                csv = 'Class,Student,Parent Phone\n';
-                data.students.forEach(s => {
-                    const className = data.classes.find(c => c.id === s.class_id)?.name || s.class_id || '-';
-                    csv += `"${className}","${s.name}","${s.parent_phone || '-'}"\n`;
-                });
-                filename = 'students_by_batch.csv';
+                downloadStudentsByClassExcel();
+                return;
             } else if (reportType === 'fees') {
                 csv = 'Receipt No,Student,Amount,Date,Method\n';
                 data.payments.forEach(p => {
@@ -5630,6 +6160,37 @@
             a.href = url;
             a.download = filename;
             a.click();
+        }
+
+        function downloadStudentsByClassExcel() {
+            fetch('/api/reports/students-by-class', { method: 'GET' })
+                .then(async (response) => {
+                    if (!response.ok) {
+                        let message = 'Failed to export students report';
+                        try {
+                            const payload = await response.json();
+                            message = payload?.error || message;
+                        } catch (err) {
+                            const text = await response.text();
+                            if (text) message = text;
+                        }
+                        throw new Error(message);
+                    }
+                    const blob = await response.blob();
+                    const disposition = response.headers.get('content-disposition') || '';
+                    const match = disposition.match(/filename=\"?([^\"]+)\"?/i);
+                    const filename = match ? match[1] : `students_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showAlert('Student report exported!');
+                })
+                .catch((err) => {
+                    showAlert(err.message || 'Failed to export students report', 'error');
+                });
         }
 
         function printReport() {

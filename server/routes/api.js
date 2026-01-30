@@ -1,7 +1,26 @@
 const express = require('express');
 const db = require('../db');
+const ExcelJS = require('exceljs');
+const fs = require('fs');
+const path = require('path');
 
 const router = express.Router();
+const PIN_REGEX = /^\d{4,6}$/;
+const ROLE_SET = new Set(['admin', 'owner', 'supervisor', 'coach']);
+
+const paymentColumns = db.prepare(`PRAGMA table_info(payments)`).all();
+if (!paymentColumns.some((col) => col.name === 'receipt_no')) {
+  db.prepare(`ALTER TABLE payments ADD COLUMN receipt_no TEXT`).run();
+}
+
+function requireAdminOrOwner(req, res) {
+  const role = String(req.user?.role || '').toLowerCase();
+  if (role !== 'admin' && role !== 'owner') {
+    res.status(403).json({ error: 'Forbidden' });
+    return false;
+  }
+  return true;
+}
 
 function parseDateOnly(value) {
   if (!value) return null;
@@ -41,6 +60,99 @@ function dayMatches(value, weekday) {
 
 router.get('/health', (req, res) => {
   res.json({ status: 'OK' });
+});
+
+router.get('/users', (req, res) => {
+  if (!requireAdminOrOwner(req, res)) return;
+  const rows = db.prepare(`
+    SELECT id, name, role, active
+    FROM users
+    ORDER BY LOWER(name)
+  `).all();
+  res.json(rows);
+});
+
+router.post('/users', (req, res) => {
+  if (!requireAdminOrOwner(req, res)) return;
+  const name = String(req.body?.name || '').trim();
+  const role = String(req.body?.role || '').trim().toLowerCase();
+  const pin = String(req.body?.pin || '').trim();
+  const active = req.body?.active === 0 || req.body?.active === false ? 0 : 1;
+
+  if (!name || !role || !pin) {
+    return res.status(400).json({ error: 'Name, role, and PIN required' });
+  }
+
+  if (!ROLE_SET.has(role)) {
+    return res.status(400).json({ error: 'Invalid role' });
+  }
+
+  if (!PIN_REGEX.test(pin)) {
+    return res.status(400).json({ error: 'PIN must be 4-6 digits' });
+  }
+
+  try {
+    db.prepare(`
+      INSERT INTO users (name, role, pin, active)
+      VALUES (?, ?, ?, ?)
+    `).run(name, role, pin, active);
+  } catch (err) {
+    if (String(err.message || '').includes('UNIQUE')) {
+      return res.status(409).json({ error: 'User name already exists' });
+    }
+    return res.status(500).json({ error: 'Failed to create user' });
+  }
+
+  return res.json({ ok: true });
+});
+
+router.put('/users/:id', (req, res) => {
+  if (!requireAdminOrOwner(req, res)) return;
+  const id = req.params.id;
+  const name = String(req.body?.name || '').trim();
+  const role = String(req.body?.role || '').trim().toLowerCase();
+  const pin = String(req.body?.pin || '').trim();
+  const active = req.body?.active === 0 || req.body?.active === false ? 0 : 1;
+
+  if (!name || !role) {
+    return res.status(400).json({ error: 'Name and role required' });
+  }
+
+  if (!ROLE_SET.has(role)) {
+    return res.status(400).json({ error: 'Invalid role' });
+  }
+
+  if (pin && !PIN_REGEX.test(pin)) {
+    return res.status(400).json({ error: 'PIN must be 4-6 digits' });
+  }
+
+  try {
+    db.prepare(`
+      UPDATE users
+      SET name = ?,
+          role = ?,
+          pin = COALESCE(NULLIF(?, ''), pin),
+          active = ?,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(name, role, pin || '', active, id);
+  } catch (err) {
+    if (String(err.message || '').includes('UNIQUE')) {
+      return res.status(409).json({ error: 'User name already exists' });
+    }
+    return res.status(500).json({ error: 'Failed to update user' });
+  }
+
+  return res.json({ ok: true });
+});
+
+router.delete('/users/:id', (req, res) => {
+  if (!requireAdminOrOwner(req, res)) return;
+  if (String(req.user?.id || '') === String(req.params.id)) {
+    return res.status(400).json({ error: 'Cannot delete current user' });
+  }
+  db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
+  return res.json({ ok: true });
 });
 
 router.get('/locations', (req, res) => {
@@ -190,6 +302,194 @@ router.put('/coaches/:id', (req, res) => {
 router.delete('/coaches/:id', (req, res) => {
   db.prepare(`DELETE FROM coaches WHERE id = ?`).run(req.params.id);
   return res.json({ ok: true });
+});
+
+router.get('/players/export', async (req, res) => {
+  const rows = db.prepare(`
+    SELECT id, name, status, parent_name, parent_phone, start_date, payment_status
+    FROM players
+    ORDER BY id
+  `).all();
+
+  const dateLabel = new Date().toISOString().split('T')[0];
+  const title = `Student List as of ${dateLabel}`;
+  const subtitle = '2RSA Badminton Academy';
+  const headerRow = [
+    'No',
+    'Player ID',
+    'Player Name',
+    'Status',
+    'Parent',
+    'Parent Phone',
+    'Start Date',
+    'Payment Status'
+  ];
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Students');
+
+  sheet.columns = [
+    { key: 'no', width: 6 },
+    { key: 'id', width: 12 },
+    { key: 'name', width: 24 },
+    { key: 'status', width: 12 },
+    { key: 'parent', width: 18 },
+    { key: 'phone', width: 16 },
+    { key: 'start', width: 14 },
+    { key: 'payment', width: 16 }
+  ];
+
+  sheet.mergeCells('C1:H1');
+  sheet.mergeCells('C2:H2');
+  sheet.getCell('C1').value = title;
+  sheet.getCell('C2').value = subtitle;
+  sheet.getRow(1).height = 28;
+  sheet.getRow(2).height = 20;
+  sheet.getRow(3).height = 8;
+
+  const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F4F7' } };
+  const titleStyle = { bold: true, size: 16, color: { argb: 'FF1F2937' } };
+  const subtitleStyle = { bold: true, size: 12, color: { argb: 'FF4B5563' } };
+
+  sheet.getCell('C1').font = titleStyle;
+  sheet.getCell('C2').font = subtitleStyle;
+  sheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
+  sheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
+  sheet.getCell('C1').fill = headerFill;
+  sheet.getCell('C2').fill = headerFill;
+
+  sheet.mergeCells('A1:B3');
+  sheet.getCell('A1').fill = headerFill;
+
+  const logoPath = path.join(__dirname, '../../public/2rsa-logo.jpg');
+  if (fs.existsSync(logoPath)) {
+    const logoId = workbook.addImage({ filename: logoPath, extension: 'jpeg' });
+    sheet.addImage(logoId, {
+      tl: { col: 0.1, row: 0.1 },
+      br: { col: 2.2, row: 2.9 }
+    });
+  }
+
+  sheet.addRow([]);
+  sheet.addRow(headerRow);
+  const headerRowIndex = sheet.lastRow.number;
+  sheet.getRow(headerRowIndex).font = { bold: true };
+  sheet.getRow(headerRowIndex).alignment = { horizontal: 'center', vertical: 'middle' };
+  sheet.getRow(headerRowIndex).fill = headerFill;
+
+  rows.forEach((row, index) => {
+    sheet.addRow([
+      index + 1,
+      row.id || '',
+      row.name || '',
+      row.status || '',
+      row.parent_name || '',
+      row.parent_phone || '',
+      row.start_date || '',
+      row.payment_status || ''
+    ]);
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="students_${dateLabel}.xlsx"`);
+  return res.send(buffer);
+});
+
+router.get('/reports/students-by-class', async (req, res) => {
+  const rows = db.prepare(`
+    SELECT p.id, p.name, p.status, p.parent_name, p.parent_phone, p.start_date, p.payment_status,
+           c.name AS class_name, p.class_id
+    FROM players p
+    LEFT JOIN classes c ON c.id = p.class_id
+    ORDER BY p.id
+  `).all();
+
+  const dateLabel = new Date().toISOString().split('T')[0];
+  const title = `Student List as of ${dateLabel}`;
+  const subtitle = '2RSA Badminton Academy';
+  const headerRow = [
+    'No',
+    'Player ID',
+    'Player Name',
+    'Status',
+    'Parent',
+    'Parent Phone',
+    'Start Date',
+    'Payment Status'
+  ];
+
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Student List');
+
+  sheet.columns = [
+    { key: 'no', width: 6 },
+    { key: 'id', width: 12 },
+    { key: 'name', width: 24 },
+    { key: 'status', width: 12 },
+    { key: 'parent', width: 18 },
+    { key: 'phone', width: 16 },
+    { key: 'start', width: 14 },
+    { key: 'payment', width: 16 }
+  ];
+
+  sheet.mergeCells('C1:H1');
+  sheet.mergeCells('C2:H2');
+  sheet.getCell('C1').value = title;
+  sheet.getCell('C2').value = subtitle;
+  sheet.getRow(1).height = 28;
+  sheet.getRow(2).height = 20;
+  sheet.getRow(3).height = 8;
+
+  const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F4F7' } };
+  const titleStyle = { bold: true, size: 16, color: { argb: 'FF1F2937' } };
+  const subtitleStyle = { bold: true, size: 12, color: { argb: 'FF4B5563' } };
+
+  sheet.getCell('C1').font = titleStyle;
+  sheet.getCell('C2').font = subtitleStyle;
+  sheet.getCell('C1').alignment = { horizontal: 'center', vertical: 'middle' };
+  sheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
+  sheet.getCell('C1').fill = headerFill;
+  sheet.getCell('C2').fill = headerFill;
+
+  sheet.mergeCells('A1:B3');
+  sheet.getCell('A1').fill = headerFill;
+
+  const logoPath = path.join(__dirname, '../../public/2rsa-logo.jpg');
+  if (fs.existsSync(logoPath)) {
+    const logoId = workbook.addImage({ filename: logoPath, extension: 'jpeg' });
+    sheet.addImage(logoId, {
+      tl: { col: 0.1, row: 0.1 },
+      br: { col: 2.2, row: 2.9 }
+    });
+  }
+
+  sheet.addRow([]);
+  sheet.addRow(headerRow);
+  const headerRowIndex = sheet.lastRow.number;
+  sheet.getRow(headerRowIndex).font = { bold: true };
+  sheet.getRow(headerRowIndex).alignment = { horizontal: 'center', vertical: 'middle' };
+  sheet.getRow(headerRowIndex).fill = headerFill;
+
+  rows.forEach((row, index) => {
+    sheet.addRow([
+      index + 1,
+      row.id || '',
+      row.name || '',
+      row.status || '',
+      row.parent_name || '',
+      row.parent_phone || '',
+      row.start_date || '',
+      row.payment_status || ''
+    ]);
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="students_${dateLabel}.xlsx"`);
+  return res.send(buffer);
 });
 
 router.get('/players', (req, res) => {
@@ -668,14 +968,44 @@ router.get('/payments', (req, res) => {
 });
 
 router.post('/payments', (req, res) => {
-  const { registration_id, amount, date, method, notes } = req.body || {};
+  const { registration_id, amount, date, method, notes, receipt_no } = req.body || {};
+  if (!registration_id || !amount || !date) {
+    return res.status(400).json({ error: 'Registration, amount, and date required' });
+  }
+  let finalReceipt = String(receipt_no || '').trim();
+  if (!finalReceipt) {
+    const row = db.prepare(`
+      SELECT COALESCE(MAX(CAST(SUBSTR(receipt_no, 5) AS INTEGER)), 0) AS max_no
+      FROM payments
+      WHERE receipt_no LIKE 'RCP-%'
+    `).get();
+    const nextNo = (row?.max_no || 0) + 1;
+    finalReceipt = `RCP-${String(nextNo).padStart(6, '0')}`;
+  }
+  db.prepare(`
+    INSERT INTO payments (registration_id, amount, date, method, notes, receipt_no)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(registration_id, amount, date, method || null, notes || null, finalReceipt);
+  return res.json({ ok: true });
+});
+
+router.put('/payments/:id', (req, res) => {
+  const { registration_id, amount, date, method, notes, receipt_no } = req.body || {};
   if (!registration_id || !amount || !date) {
     return res.status(400).json({ error: 'Registration, amount, and date required' });
   }
   db.prepare(`
-    INSERT INTO payments (registration_id, amount, date, method, notes)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(registration_id, amount, date, method || null, notes || null);
+    UPDATE payments
+    SET registration_id = ?, amount = ?, date = ?, method = ?, notes = ?,
+        receipt_no = COALESCE(NULLIF(?, ''), receipt_no),
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `).run(registration_id, amount, date, method || null, notes || null, receipt_no || '', req.params.id);
+  return res.json({ ok: true });
+});
+
+router.delete('/payments/:id', (req, res) => {
+  db.prepare('DELETE FROM payments WHERE id = ?').run(req.params.id);
   return res.json({ ok: true });
 });
 
